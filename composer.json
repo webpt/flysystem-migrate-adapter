@@ -1,0 +1,23 @@
+{
+    "name": "webpt/flysystem-migrate-adapter",
+    "description": "Flysystem adapter for migration",
+    "type": "library",
+    "require-dev": {
+        "phpunit/phpunit": "~4.0"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Jeremy Giberson",
+            "email": "jeremyg@webpt.com"
+        }
+    ],
+    "require": {
+        "league/flysystem": "~1.0"
+    },
+    "autoload": {
+        "psr4": {
+            "WebPT\\Flysystem\\Migrate\\": "src/"
+        }
+    }
+}
