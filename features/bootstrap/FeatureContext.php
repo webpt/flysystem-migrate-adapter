@@ -1,10 +1,7 @@
 <?php
-
 use Behat\Behat\Context\Context;
 use Behat\Behat\Context\SnippetAcceptingContext;
-use Behat\Gherkin\Node\PyStringNode;
-use Behat\Gherkin\Node\TableNode;
-use League\Flysystem\Adapter\Local;
+use Clarkeash\Vfs\Adapter;
 use org\bovigo\vfs\vfsStream;
 use WebPT\Flysystem\Migrate\MigrateAdapter;
 use PHPUnit_Framework_Assert as PHPUnit;
@@ -38,9 +35,10 @@ class FeatureContext implements Context, SnippetAcceptingContext
     {
         $this->initializeSourceRoot();
         $this->initializeDestinationRoot();
+
         $this->filesystem = new \League\Flysystem\Filesystem(new MigrateAdapter(
-            new Local($this->sourceRoot->url()),
-            new Local($this->destinationRoot->url())
+            new Adapter($this->sourceRoot->url()),
+            new Adapter($this->destinationRoot->url())
         ));
     }
 
@@ -62,12 +60,12 @@ class FeatureContext implements Context, SnippetAcceptingContext
 
     private function initializeSourceRoot()
     {
-        $this->sourceRoot = vfsStream::setup(self::SOURCE_FOLDER);
+        $this->sourceRoot = vfsStream::setup('/tmp' . DIRECTORY_SEPARATOR . self::SOURCE_FOLDER);
     }
 
     private function initializeDestinationRoot()
     {
-        $this->destinationRoot = vfsStream::setup(self::DESTINATION_FOLDER);
+        $this->destinationRoot = vfsStream::setup('/tmp' . DIRECTORY_SEPARATOR . self::DESTINATION_FOLDER);
     }
 
     /**
