@@ -6,21 +6,20 @@ namespace WebPT\Flysystem\Migrate;
 
 use League\Flysystem\AdapterInterface;
 use League\Flysystem\Config;
-use League\Flysystem\FilesystemInterface;
 
 class MigrateAdapter implements AdapterInterface
 {
-    /** @var  FilesystemInterface */
+    /** @var  AdapterInterface */
     private $source;
-    /** @var  FilesystemInterface */
+    /** @var  AdapterInterface */
     private $destination;
 
     /**
      * MigrateAdapter constructor.
-     * @param FilesystemInterface $source
-     * @param FilesystemInterface $destination
+     * @param AdapterInterface $source
+     * @param AdapterInterface $destination
      */
-    public function __construct(FilesystemInterface $source, FilesystemInterface $destination)
+    public function __construct(AdapterInterface $source, AdapterInterface $destination)
     {
         $this->source = $source;
         $this->destination = $destination;

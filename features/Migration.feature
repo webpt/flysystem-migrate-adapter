@@ -11,14 +11,13 @@ Feature: Migration Adapter
     And the contents of "fileA.txt" in the destination should be "Hello World"
     And the source should not contain "fileA.txt"
 
-  Scenario: Writing to a stream
-    Given an empty source
+  Scenario: Writing from a stream
+    Given the source contains "fileA.txt" with contents "Hello World"
     And an empty destination
     When I open a stream for "fileA.txt"
-    And I write "Hello World" to the stream
-    Then I should see the "fileA.txt" in the destination
-    And the contents of the stream should be "Hello World"
-    And the source should not contain "fileA.txt"
+    And I write the stream to "fileB.txt"
+    Then I should see the "fileB.txt" in the destination
+    Then the contents of "fileB.txt" in the destination should be "Hello World"
     
   Scenario: Updating a file that has not been migrated to the destination
     Given the source contains "fileA.txt" with contents "Hello World"
@@ -28,66 +27,63 @@ Feature: Migration Adapter
 
   Scenario: Updating a file that has been migrated to the destination
     Given the source contains "fileA.txt" with contents "Hello World"
-    And the destination contains "fileA.txt" and the contents "Hello World"
+    And the destination contains "fileA.txt" with contents "Hello World"
     When I update the file "fileA.txt" with "!"
     Then the contents of "fileA.txt" in the destination should be "Hello World!"
     And the contents of "fileA.txt" in the source should be "Hello World"
     
-  Scenario: Updating a stream that has not been migrated to the destination
-    Given the source contains "fileA.txt" with contents "Hello World"
+  Scenario: Updating a file that has not been migrated to the destination from a stream
+    Given the source contains "fileA.txt" with contents "wide Web"
+    And the source contains "fileB.txt" with contents "Hello World"
     And an empty destination
     When I open a stream for "fileA.txt"
-    And I append "!" to the stream
-    Then the contents of the stream should be "Hello World!"
-    And the contents of "fileA.txt" in the source should be "Hello World!"
+    And I update "fileB.txt" with the stream
+    Then the contents of "fileB.txt" in the source should be "Hello Worldwide Web"
 
-  Scenario: Updating a stream that has been migrated to the destination
-    Given the source contains "fileA.txt" with contents "Hello World"
-    And the destination contains "fileA.txt" with contents "Hello World"
+  Scenario: Updating a file that has been migrated to the destination from a stream
+    Given the source contains "fileA.txt" with contents "wide Web"
+    And the source contains "fileB.txt" with contents "Hello World"
+    And the destination contains "fileB.txt" with contents "Hello world"
     When I open a stream for "fileA.txt"
-    And I append "!" to the stream
-    Then the contents of the stream should be "Hello World!"
-    And the contents of "fileA.txt" in the destination should be "Hello World!"
-    And the contents of "fileA.txt" in the source should be "Hello World"
+    And I update "fileB.txt" with the stream
+    Then the contents of "fileB.txt" in the destination should be "Hello Worldwide Web"
+    And the contents of "fileB.txt" in the source should be "Hello World"
 
   Scenario: Read a file that has not been migrated to the destination
     Given the source contains "fileA.txt" with contents "Hello World"
     And an empty destination
     When I read the file "fileA.txt"
-    Then I should see the content "Hello World"
+    Then I should see "Hello World"
     
   Scenario: Read a file that has been migrated to the destination
     Given the source contains "fileA.txt" with contents "Hello World"
     And the destination contains "fileA.txt" with contents "Hello World"
     When I read the file "fileA.txt"
-    Then I should see the content "Hello World"
+    Then I should see "Hello World"
 
   Scenario: Read a file that has been migrated to the destination and the destination has been updated
     Given the source contains "fileA.txt" with contents "Hello World"
     And the destination contains "fileA.txt" with contents "Hello World!"
     When I read the file "fileA.txt"
-    Then I should see the content "Hello World!"
+    Then I should see "Hello World!"
 
   Scenario: Read a stream that has not been migrated to the destination
     Given the source contains "fileA.txt" with contents "Hello World"
     And an empty destination
-    When I open a stream for "fileA.txt"
-    And I read the stream
-    Then I should see the content "Hello World"
+    When I read "fileA.txt" into a stream
+    Then the stream should contain "Hello World"
     
   Scenario: Read a stream that has been migrated to the destination
     Given the source contains "fileA.txt" with contents "Hello World"
     And the destination contains "fileA.txt" with contents "Hello World"
-    When I open a stream for "fileA.txt"
-    And I read the stream
-    Then I should see the content "Hello World"
+    When I read "fileA.txt" into a stream
+    Then the stream should contain "Hello World"
 
   Scenario: Read a stream that has been migrated to the destination and the destination has been updated
     Given the source contains "fileA.txt" with contents "Hello World"
     And the destination contains "fileA.txt" with contents "Hello World!"
-    When I open a stream for "fileA.txt"
-    And I read the stream
-    Then I should see the content "Hello World!"
+    When I read "fileA.txt" into a stream
+    Then the stream should contain "Hello World!"
 
   Scenario: Copy a file that has not been migrated to the destination
     Given the source contains "fileA.txt" with contents "Hello World"
