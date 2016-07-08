@@ -4,18 +4,81 @@
 class MigrateAdapterTest extends PHPUnit_Framework_TestCase
 {
     // write
+    public function testWriteMethodWrapsDestination_Write()
+    {
+
+    }
 
     // write stream
+    public function testWriteStreamMethodWrapsDestinationWriteStream()
+    {
+
+    }
 
     // update
+    public function testUpdateMethodWrapsDestinationUpdateIfDestinationHasPath()
+    {
+
+    }
+
+    public function testUpdateMethodWrapsSourceUpdateIfDestinationDoesNotHavePath()
+    {
+
+    }
 
     // updateStream
+    public function testUpdateStreamMethodWrapsDestinationUpdateStreamIfDestinationHasPath()
+    {
+
+    }
+
+    public function testUpdateStreamMethodWrapsSourceUpdateStreamIfDestinationDoesNotHavePath()
+    {
+
+    }
 
     // rename
+    public function testRenameMethodWrapsSourceAndDestinationRename()
+    {
+
+    }
+
+    public function testRenameMethodDoesNotWrapDestinationRenameIfDestinationDoesNotHavePath()
+    {
+
+    }
+
+    public function testRenameMethodDoesNotWrapSourceRenameIfSourceDoesNotHavePath()
+    {
+
+    }
 
     // copy
+    public function testCopyMethodWrapsDestinationCopyMethod()
+    {
+
+    }
+
+    public function testCopyMethodWrapsSourceCopyMethodIfDestinationDoesNotHavePath()
+    {
+
+    }
 
     // delete
+    public function testDeleteMethodWrapsSourceAndDestinationDelete()
+    {
+
+    }
+
+    public function testDeleteMethodDoesNotWrapDestinationDeleteWhenDestinationDoesNotHavePath()
+    {
+
+    }
+
+    public function testDeleteMethodDoesNotWrapSourceDeleteWhenSourceDoesNotHavePath()
+    {
+
+    }
 
     // deleteDir
 
