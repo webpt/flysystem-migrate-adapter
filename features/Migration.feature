@@ -19,26 +19,26 @@ Feature: Migration Adapter
     Then I should see the "fileB.txt" in the destination
     Then the contents of "fileB.txt" in the destination should be "Hello World"
     
-  Scenario: Updating a file that has not been migrated to the destination
+  Scenario: Update a file that has not been migrated to the destination
     Given the source contains "fileA.txt" with contents "Hello World"
     And an empty destination
-    When I update the file "fileA.txt" with "!"
-    Then the contents of "fileA.txt" in the source should be "Hello World!"
+    When I update the file "fileA.txt" with "Goodbye World"
+    Then the contents of "fileA.txt" in the source should be "Goodbye World"
 
-  Scenario: Updating a file that has been migrated to the destination
+  Scenario: Update a file that has been migrated to the destination
     Given the source contains "fileA.txt" with contents "Hello World"
     And the destination contains "fileA.txt" with contents "Hello World"
-    When I update the file "fileA.txt" with "!"
-    Then the contents of "fileA.txt" in the destination should be "Hello World!"
+    When I update the file "fileA.txt" with "Goodbye World"
+    Then the contents of "fileA.txt" in the destination should be "Goodbye World"
     And the contents of "fileA.txt" in the source should be "Hello World"
     
-  Scenario: Updating a file that has not been migrated to the destination from a stream
+  Scenario: Update a file that has not been migrated to the destination from a stream
     Given the source contains "fileA.txt" with contents "wide Web"
     And the source contains "fileB.txt" with contents "Hello World"
     And an empty destination
     When I open a stream for "fileA.txt"
     And I update "fileB.txt" with the stream
-    Then the contents of "fileB.txt" in the source should be "Hello Worldwide Web"
+    Then the contents of "fileB.txt" in the source should be "wide Web"
 
   Scenario: Updating a file that has been migrated to the destination from a stream
     Given the source contains "fileA.txt" with contents "wide Web"
@@ -46,7 +46,7 @@ Feature: Migration Adapter
     And the destination contains "fileB.txt" with contents "Hello world"
     When I open a stream for "fileA.txt"
     And I update "fileB.txt" with the stream
-    Then the contents of "fileB.txt" in the destination should be "Hello Worldwide Web"
+    Then the contents of "fileB.txt" in the destination should be "wide Web"
     And the contents of "fileB.txt" in the source should be "Hello World"
 
   Scenario: Read a file that has not been migrated to the destination
@@ -209,31 +209,34 @@ Feature: Migration Adapter
     Given the source contains "fileA.txt" with contents "Hello"
     And an empty destination
     When I get the metadata for "fileA.txt"
-    Then I should see "???"
+    Then I should see "file, fileA.txt, 5"
 
   Scenario: Metadata on a file that has been migrated to the destination
     Given the source contains "fileA.txt" with contents "Hello"
     And the destination contains "fileA.txt" with contents "Hello"
     When I get the metadata for "fileA.txt"
-    Then I should see "???"
+    Then I should see "file, fileA.txt, 5"
 
   Scenario: Metadata on a file that has been migrated to the destination and the destination has been updated
     Given the source contains "fileA.txt" with contents "Hello"
     And the destination contains "fileA.txt" with contents "Hello World"
     When I get the metadata for "fileA.txt"
-    Then I should see "???"
+    Then I should see "file, fileA.txt, 11"
     
   Scenario: Timestamp on a file that has not been migrated to the destination
     Given the source contains "fileA.txt" with contents "Hello"
+    And the source "fileA.txt" was created at "1468003283"
     And an empty destination
     When I get the timestamp for "fileA.txt"
-    Then I should see "0000-00-00:00.00"
+    Then I should see "1468003283"
     
   Scenario: Timestamp on a file that has been migrated to the destination
     Given the source contains "fileA.txt" with contents "Hello"
+    And the source "fileA.txt" was created at "1468003283"
     And the destination contains "fileA.txt" with contents "Hello"
+    And the destination "fileA.txt" was created at "1468005000"
     When I get the timestamp for "fileA.txt"
-    Then I should see "0000-00-00:00.00"
+    Then I should see "1468005000"
 
   Scenario: Mimetype on a file that has not been migrated to the destination
     Given the source contains "fileA.txt" with contents "Hello"

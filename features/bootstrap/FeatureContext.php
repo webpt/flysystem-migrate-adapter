@@ -1,6 +1,7 @@
 <?php
 use Behat\Behat\Context\Context;
 use Behat\Behat\Context\SnippetAcceptingContext;
+use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Clarkeash\Vfs\Adapter;
 use org\bovigo\vfs\vfsStream;
 use WebPT\Flysystem\Migrate\MigrateAdapter;
@@ -15,31 +16,36 @@ class FeatureContext implements Context, SnippetAcceptingContext
     const DESTINATION_FOLDER = 'destination';
 
     /** @var  \org\bovigo\vfs\vfsStreamDirectory */
-    private $sourceRoot;
-    /** @var  \org\bovigo\vfs\vfsStreamDirectory */
-    private $destinationRoot;
+    private $vfsRoot;
     /** @var  \League\Flysystem\FilesystemInterface */
     private $filesystem;
     /** @var  string */
     private $result;
 
     private $stream = null;
-    /**
-     * Initializes context.
-     *
-     * Every scenario gets its own context instance.
-     * You can also pass arbitrary arguments to the
-     * context constructor through behat.yml.
-     */
-    public function __construct()
+
+    private function getSourcePath() {
+        return $this->vfsRoot->url() . DIRECTORY_SEPARATOR . self::SOURCE_FOLDER;
+    }
+    
+    private function getDestinationPath() {
+        return $this->vfsRoot->url() . DIRECTORY_SEPARATOR . self::DESTINATION_FOLDER;
+    }
+
+    /** @BeforeScenario */
+    public function before(BeforeScenarioScope $scope)
     {
-        $this->initializeSourceRoot();
-        $this->initializeDestinationRoot();
+        $this->vfsRoot = vfsStream::setup();
+        @mkdir($this->getSourcePath());
+        @mkdir($this->getDestinationPath());
 
         $this->filesystem = new \League\Flysystem\Filesystem(new MigrateAdapter(
-            new Adapter($this->sourceRoot->url()),
-            new Adapter($this->destinationRoot->url())
+            new Adapter($this->getSourcePath(), 0),
+            new Adapter($this->getDestinationPath(), 0)
         ));
+
+        $this->stream = null;
+        $this->result = null;
     }
 
     /**
@@ -47,7 +53,10 @@ class FeatureContext implements Context, SnippetAcceptingContext
      */
     public function anEmptySource()
     {
-        $this->initializeSourceRoot();
+        if ($this->vfsRoot->hasChild(self::SOURCE_FOLDER)) {
+            $this->vfsRoot->removeChild(self::SOURCE_FOLDER);
+        }
+        @mkdir($this->getSourcePath());
     }
 
     /**
@@ -55,17 +64,10 @@ class FeatureContext implements Context, SnippetAcceptingContext
      */
     public function anEmptyDestination()
     {
-        $this->initializeDestinationRoot();
-    }
-
-    private function initializeSourceRoot()
-    {
-        $this->sourceRoot = vfsStream::setup('/tmp' . DIRECTORY_SEPARATOR . self::SOURCE_FOLDER);
-    }
-
-    private function initializeDestinationRoot()
-    {
-        $this->destinationRoot = vfsStream::setup('/tmp' . DIRECTORY_SEPARATOR . self::DESTINATION_FOLDER);
+        if ($this->vfsRoot->hasChild(self::DESTINATION_FOLDER)) {
+            $this->vfsRoot->removeChild(self::DESTINATION_FOLDER);
+        }
+        @mkdir($this->getDestinationPath());
     }
 
     /**
@@ -81,7 +83,7 @@ class FeatureContext implements Context, SnippetAcceptingContext
      */
     public function iShouldSeeTheInTheDestination($fileName)
     {
-        PHPUnit::assertFileExists($this->destinationRoot->url() . DIRECTORY_SEPARATOR . $fileName);
+        PHPUnit::assertFileExists($this->getDestinationPath() . DIRECTORY_SEPARATOR . $fileName);
     }
 
     /**
@@ -89,7 +91,7 @@ class FeatureContext implements Context, SnippetAcceptingContext
      */
     public function theContentsOfInTheDestinationShouldBe($fileName, $expectedContents)
     {
-        $contents = file_get_contents($this->destinationRoot->url() . DIRECTORY_SEPARATOR . $fileName);
+        $contents = file_get_contents($this->getDestinationPath() . DIRECTORY_SEPARATOR . $fileName);
         PHPUnit::assertEquals($expectedContents, $contents);
     }
 
@@ -98,7 +100,7 @@ class FeatureContext implements Context, SnippetAcceptingContext
      */
     public function theSourceShouldNotContain($fileName)
     {
-        PHPUnit::assertFileNotExists($this->sourceRoot->url() . DIRECTORY_SEPARATOR . $fileName);
+        PHPUnit::assertFileNotExists($this->getSourcePath() . DIRECTORY_SEPARATOR . $fileName);
     }
 
     /**
@@ -110,7 +112,7 @@ class FeatureContext implements Context, SnippetAcceptingContext
             fclose($this->stream);
         }
 
-        $this->stream = fopen($fileName, 'r+');
+        $this->stream = fopen($this->getSourcePath() . DIRECTORY_SEPARATOR . $fileName, 'r+');
     }
 
     /**
@@ -127,7 +129,7 @@ class FeatureContext implements Context, SnippetAcceptingContext
      */
     public function theSourceContainsWithContents($fileName, $contents)
     {
-        file_put_contents($this->sourceRoot->url() . DIRECTORY_SEPARATOR . $fileName, $contents);
+        file_put_contents($this->getSourcePath() . DIRECTORY_SEPARATOR . $fileName, $contents);
     }
 
     /**
@@ -144,7 +146,7 @@ class FeatureContext implements Context, SnippetAcceptingContext
      */
     public function theContentsOfInTheSourceShouldBe($fileName, $expectedContents)
     {
-        $contents = file_get_contents($this->sourceRoot->url() . DIRECTORY_SEPARATOR . $fileName);
+        $contents = file_get_contents($this->getSourcePath() . DIRECTORY_SEPARATOR . $fileName);
         PHPUnit::assertEquals($expectedContents, $contents);
     }
 
@@ -153,7 +155,7 @@ class FeatureContext implements Context, SnippetAcceptingContext
      */
     public function theDestinationContainsWithContents($fileName, $content)
     {
-        file_put_contents($this->destinationRoot->url() . DIRECTORY_SEPARATOR . $fileName, $content);
+        file_put_contents($this->getDestinationPath() . DIRECTORY_SEPARATOR . $fileName, $content);
     }
 
     /**
@@ -209,7 +211,7 @@ class FeatureContext implements Context, SnippetAcceptingContext
      */
     public function theSourceShouldContain($fileName)
     {
-        PHPUnit::assertFileExists($this->sourceRoot->url() . DIRECTORY_SEPARATOR . $fileName);
+        PHPUnit::assertFileExists($this->getSourcePath() . DIRECTORY_SEPARATOR . $fileName);
     }
 
     /**
@@ -217,7 +219,7 @@ class FeatureContext implements Context, SnippetAcceptingContext
      */
     public function theDestinationShouldContain($fileName)
     {
-        PHPUnit::assertFileExists($this->destinationRoot->url() . DIRECTORY_SEPARATOR . $fileName);
+        PHPUnit::assertFileExists($this->getDestinationPath() . DIRECTORY_SEPARATOR . $fileName);
     }
 
     /**
@@ -233,7 +235,7 @@ class FeatureContext implements Context, SnippetAcceptingContext
      */
     public function theDestinationShouldNotContain($fileName)
     {
-        PHPUnit::assertFileNotExists($this->destinationRoot->url() . DIRECTORY_SEPARATOR . $fileName);
+        PHPUnit::assertFileNotExists($this->getDestinationPath() . DIRECTORY_SEPARATOR . $fileName);
     }
 
     /**
@@ -273,7 +275,7 @@ class FeatureContext implements Context, SnippetAcceptingContext
      */
     public function theDestinationShouldContainTheDirectory($directoryName)
     {
-        PHPUnit::assertTrue(is_dir($this->destinationRoot->url() . DIRECTORY_SEPARATOR . $directoryName));
+        PHPUnit::assertTrue(is_dir($this->getDestinationPath() . DIRECTORY_SEPARATOR . $directoryName));
     }
 
     /**
@@ -281,7 +283,7 @@ class FeatureContext implements Context, SnippetAcceptingContext
      */
     public function theSourceContainsTheDirectory($directoryName)
     {
-        $dir = $this->sourceRoot->url() . DIRECTORY_SEPARATOR . $directoryName;
+        $dir = $this->getSourcePath() . DIRECTORY_SEPARATOR . $directoryName;
         if(!@mkdir($dir) && !is_dir($dir)) {
             throw new \RuntimeException("Could not create directory for test");
         }
@@ -300,7 +302,7 @@ class FeatureContext implements Context, SnippetAcceptingContext
      */
     public function theSourceShouldNotContainTheDirectory($fileName)
     {
-        PHPUnit::assertFalse(is_dir($this->sourceRoot->url() . DIRECTORY_SEPARATOR . $fileName));
+        PHPUnit::assertFalse(is_dir($this->getSourcePath() . DIRECTORY_SEPARATOR . $fileName));
     }
 
     /**
@@ -308,7 +310,7 @@ class FeatureContext implements Context, SnippetAcceptingContext
      */
     public function theDestinationContainsTheDirectory($directoryName)
     {
-        $dir = $this->destinationRoot->url() . DIRECTORY_SEPARATOR . $directoryName;
+        $dir = $this->getDestinationPath() . DIRECTORY_SEPARATOR . $directoryName;
         if(!@mkdir($dir) && !is_dir($dir)) {
             throw new \RuntimeException("Could not create directory for test");
         }
@@ -319,7 +321,7 @@ class FeatureContext implements Context, SnippetAcceptingContext
      */
     public function theDestinationShouldNotContainTheDirectory($fileName)
     {
-        PHPUnit::assertFalse(is_dir($this->destinationRoot->url() . DIRECTORY_SEPARATOR . $fileName));
+        PHPUnit::assertFalse(is_dir($this->getDestinationPath() . DIRECTORY_SEPARATOR . $fileName));
     }
 
     /**
@@ -327,7 +329,9 @@ class FeatureContext implements Context, SnippetAcceptingContext
      */
     public function iListTheContentsOf($directoryName)
     {
-        $this->result = $this->filesystem->listContents($directoryName);
+        $contents = $this->filesystem->listContents($directoryName);
+        $files = array_map(function($entry){ return $entry['basename']; }, $contents);
+        $this->result = implode(', ', $files);
     }
 
     /**
@@ -343,7 +347,9 @@ class FeatureContext implements Context, SnippetAcceptingContext
      */
     public function iGetTheMetadataFor($fileName)
     {
-        $this->result = $this->filesystem->getMetadata($fileName);
+        $metadata = $this->filesystem->getMetadata($fileName);
+        unset($metadata['timestamp']); // unpredictable so lets remove it
+        $this->result = join(', ', $metadata);
     }
 
     /**
@@ -360,6 +366,22 @@ class FeatureContext implements Context, SnippetAcceptingContext
     public function iGetTheMimetypeFor($fileName)
     {
         $this->result = $this->filesystem->getMimetype($fileName);
+    }
+
+    /**
+     * @Given /^the source "([^"]*)" was created at "([^"]*)"$/
+     */
+    public function theSourceWasCreatedAt($fileName, $time)
+    {
+        touch($this->getSourcePath() . DIRECTORY_SEPARATOR . $fileName, $time, $time);
+    }
+
+    /**
+     * @Given /^the destination "([^"]*)" was created at "([^"]*)"$/
+     */
+    public function theDestinationWasCreatedAt($fileName, $time)
+    {
+        touch($this->getDestinationPath() . DIRECTORY_SEPARATOR . $fileName, $time, $time);
     }
 
 
